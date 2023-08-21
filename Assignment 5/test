@@ -1,0 +1,65 @@
+;=========== Taylor Series Start =========== 
+    push qword 0 
+
+    movsd xmm0, xmm15               ; copy angle x to xmm0
+
+;=========== (-1)^n stored xmm12 ===========
+    mov r10, -1                     ; copy -1 to r10
+    cvtsi2sd xmm13, r10             ; int -1 to float -1
+    movsd xmm12, xmm13              ; copy float -1
+
+    mov r13, 0                      ; set r13 to 0
+    negOne:
+        cmp r13, r15                ;repeate n times
+        je exitNegOne
+
+        mulsd xmm12, xmm13          ; xmm12 = xmm12 * -1
+
+        inc r13
+        jmp negOne
+    exitNegOne
+        
+;=========== x^(2n + 1)  stored xmm0 ===========
+    mov r12, r15                    ; set aside n in r12
+    add r12, r12                    ; set r12 to 2n
+    add r12, 1                      ; set r12 to 2n+1
+
+    mov r13, 0
+    numerator:
+        cmp r13, r12                ;repeat 2n+1 times
+        je exitNumerator
+
+        mulsd xmm0, xmm15           ; xmm0 = xmm0 * x
+
+        inc r13
+        jmp numerator
+    exitNumerator
+
+;=========== (2n+1)! stored xmm11 ===========
+    mov r12, r15                    ; set aside n in r12
+    add r12, r12                    ; set r12 to 2n
+    add r12, 1                      ; set r12 to 2n+1
+
+    mov r13, 1                      ; set r13 1
+    cvtsi2sd xmm11, r13             ; int 1 to float 1
+
+    mov r13, 0
+    denominator:
+        cmp r13, r12                ;repeat 2n+1 times
+        je exitDenominator
+
+        mov r11, r13                ; copy n term to r11
+        cvtsi2sd xmm10, r11         ; int n to float n
+        mulsd xmm11, xmm10          ; xmm11 =  xmm11 * n
+
+        inc r13
+        jmp denominator
+    exitDenominator
+
+;=========== x^(2n+1) / (2n+1!) stored xmm0 ===========
+    divsd xmm0, xmm12
+
+;=========== (-1)^n * x^(2n+1) / (2n+1!) stored xmm15 ===========
+    mulsd xmm15, xmm0
+
+    pop rax
